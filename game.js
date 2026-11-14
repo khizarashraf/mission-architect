@@ -1,14 +1,3 @@
-// ===================================================================
-//  MISSION ARCHITECT - the brain of the game
-//  Plan: (1) data  (2) page setup  (3) the math  (4) draw the screen
-//        (5) team mode  (6) launch  (7) welcome pop-up and start
-// ===================================================================
-
-
-// ---------- 1. THE DATA ----------
-// All the numbers live here. Want to rebalance the game? Edit these lists.
-// (Simplified, invented numbers. Not real NASA data.)
-
 // Difficulty levels: budget = money we can spend, eventChance = chance of space weather
 const levels = {
   easy:   { budget: 180, eventChance: 0 },
@@ -79,7 +68,6 @@ const roleSets = {
 const ownerNames = { director: "mission director", engineer: "power and comms engineer", science: "science lead" };
 
 
-// ---------- 2. GAME STATE AND PAGE ELEMENTS ----------
 let BUDGET = 150;      // changes with difficulty
 let players = 1;       // 1 to 4
 let activeIdx = 0;     // whose turn it is in team mode
@@ -95,7 +83,6 @@ const findById = (list, id) => list.find((item) => item.id === id);
 const currentRoles = () => roleSets[players];
 
 
-// ---------- 3. FILL THE CHOICES ----------
 function fillDropdown(select, items) {
   items.forEach((item) => {
     const option = document.createElement("option");
@@ -120,8 +107,7 @@ instruments.forEach((inst) => {
 });
 
 
-// ---------- 4. THE MATH ----------
-// Reads the player's choices and works out every number. It does NOT touch the screen.
+
 function calculateDesign() {
   const dest    = findById(destinations, destSelect.value);
   const rocket  = findById(rockets, rocketSelect.value);
@@ -147,8 +133,6 @@ function calculateDesign() {
   const dataMade  = sum("data");
   const science   = sum("science");
 
-  // ----- The rules. Each broken rule adds a lesson to "problems" -----
-  // owner = which team role should fix it (used in team mode)
   const problems = [];
   const add = (owner, text) => problems.push({ owner, text });
 
@@ -170,32 +154,26 @@ function calculateDesign() {
   if (dataMade > dataCanSend) {
     add("engineer", `Your instruments make ${dataMade} data but the antenna can only send ${dataCanSend} from there. The rest is lost. That limit is the data rate. Get a bigger antenna or fewer instruments.`);
   }
-
-  // Bonus: 1 point for every 5 budget left over
+  
   const bonus = cost <= BUDGET ? Math.floor((BUDGET - cost) / 5) : 0;
-
   return { dest, rocket, power, antenna, chosen, cost, mass, powerMade, powerUsed,
            dataCanSend, dataMade, science, bonus, problems };
 }
 
 
-// ---------- 5. DRAW THE SCREEN ----------
 function setBar(name, used, limit) {
   $(name + "Fill").style.width = Math.min(100, (used / limit) * 100) + "%";
   $(name + "Fill").classList.toggle("over", used > limit);
   $(name + "Text").textContent = `${used} / ${limit}`;
 }
 
-// Show the chosen planet. Europa also shows giant Jupiter behind it.
 function drawPlanet(dest) {
   if (dest.id === lastDest) return;
   lastDest = dest.id;
   $("destGlobe").className = "globe " + dest.id.toLowerCase();
   $("jupiter").hidden = dest.id !== "Europa";
   $("planetLabel").textContent = dest.name;
-}
 
-// Show every part in the bay. New parts "pop" in.
 function drawBay(d) {
   const parts = [
     { id: "body", icon: "🛰️", name: "Spacecraft body" },
@@ -248,7 +226,6 @@ function updateScreen() {
 }
 
 
-// ---------- 6. TEAM MODE (pass the computer around) ----------
 function buildTeamBar() {
   const bar = $("teamBar");
   bar.hidden = players === 1;
@@ -256,7 +233,7 @@ function buildTeamBar() {
     `<button data-i="${i}" class="${i === activeIdx ? "active" : ""}">Player ${i + 1}: ${role.name}</button>`).join("");
 }
 
-// Lock every part of the design that the active player does not own
+
 function applyRoles() {
   const role = currentRoles()[activeIdx];
   document.querySelectorAll("[data-owner]").forEach((box) => {
@@ -276,7 +253,6 @@ $("teamBar").addEventListener("click", (e) => {
 });
 
 
-// ---------- 7. LAUNCH! ----------
 function launch() {
   const d = calculateDesign();
   const rocketIcon = $("rocketIcon");
@@ -309,7 +285,7 @@ function launch() {
   $("resetBtn").hidden = false;
 }
 
-// Back to the design screen with a fresh space-weather roll
+
 function designAgain() {
   const rocketIcon = $("rocketIcon");
   rocketIcon.className = "rocket noanim";     // jump back to Earth with no animation
@@ -328,7 +304,7 @@ function designAgain() {
 }
 
 
-// ---------- 8. WELCOME POP-UP AND START ----------
+
 const slides = [...document.querySelectorAll("#intro .slide")];
 let slideNo = 0;
 const currentLevel = () => document.querySelector("input[name=level]:checked").value;
