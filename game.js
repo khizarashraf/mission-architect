@@ -45,13 +45,11 @@ const instruments = [
   { id: "radar",  icon: "🌀", name: "Radar",        cost: 25, mass: 60, power: 45, data: 25, science: 35 }
 ];
 
-// ADVANCED FEATURE 1: random space weather. Warned in advance, so players can plan.
 const events = [
   { id: "storm",    text: "A solar storm is coming. Solar panels will lose 40% of their power. Nuclear batteries are safe." },
   { id: "blackout", text: "Radio interference is coming. Your antenna will send 30% less data." }
 ];
 
-// ADVANCED FEATURE 2: team mode. Each role "owns" some parts of the design.
 // (Real mission teams also split the work between specialists.)
 const roleSets = {
   1: [{ name: "Mission commander", owns: ["director", "engineer", "science"], launches: true }],
@@ -107,7 +105,7 @@ instruments.forEach((inst) => {
 });
 
 
-
+// Reads the player's choices and works out every number. It does NOT touch the screen.
 function calculateDesign() {
   const dest    = findById(destinations, destSelect.value);
   const rocket  = findById(rockets, rocketSelect.value);
@@ -133,6 +131,8 @@ function calculateDesign() {
   const dataMade  = sum("data");
   const science   = sum("science");
 
+  // ----- The rules. Each broken rule adds a lesson to "problems" -----
+  // owner = which team role should fix it (used in team mode)
   const problems = [];
   const add = (owner, text) => problems.push({ owner, text });
 
@@ -154,8 +154,10 @@ function calculateDesign() {
   if (dataMade > dataCanSend) {
     add("engineer", `Your instruments make ${dataMade} data but the antenna can only send ${dataCanSend} from there. The rest is lost. That limit is the data rate. Get a bigger antenna or fewer instruments.`);
   }
-  
+
+  // Bonus: 1 point for every 5 budget left over
   const bonus = cost <= BUDGET ? Math.floor((BUDGET - cost) / 5) : 0;
+
   return { dest, rocket, power, antenna, chosen, cost, mass, powerMade, powerUsed,
            dataCanSend, dataMade, science, bonus, problems };
 }
@@ -167,13 +169,16 @@ function setBar(name, used, limit) {
   $(name + "Text").textContent = `${used} / ${limit}`;
 }
 
+// Show the chosen planet. Europa also shows giant Jupiter behind it.
 function drawPlanet(dest) {
   if (dest.id === lastDest) return;
   lastDest = dest.id;
   $("destGlobe").className = "globe " + dest.id.toLowerCase();
   $("jupiter").hidden = dest.id !== "Europa";
   $("planetLabel").textContent = dest.name;
+}
 
+// Show every part in the bay. New parts "pop" in.
 function drawBay(d) {
   const parts = [
     { id: "body", icon: "🛰️", name: "Spacecraft body" },
@@ -233,7 +238,7 @@ function buildTeamBar() {
     `<button data-i="${i}" class="${i === activeIdx ? "active" : ""}">Player ${i + 1}: ${role.name}</button>`).join("");
 }
 
-
+// Lock every part of the design that the active player does not own
 function applyRoles() {
   const role = currentRoles()[activeIdx];
   document.querySelectorAll("[data-owner]").forEach((box) => {
@@ -285,7 +290,7 @@ function launch() {
   $("resetBtn").hidden = false;
 }
 
-
+// Back to the design screen with a fresh space-weather roll
 function designAgain() {
   const rocketIcon = $("rocketIcon");
   rocketIcon.className = "rocket noanim";     // jump back to Earth with no animation
@@ -302,8 +307,6 @@ function designAgain() {
   applyRoles();
   updateScreen();
 }
-
-
 
 const slides = [...document.querySelectorAll("#intro .slide")];
 let slideNo = 0;
