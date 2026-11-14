@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mission Architect</title>
+  <!-- style.css = how it looks | game.js = how it thinks -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div>
+      <h1>Mission Architect</h1>
+      <p>Design a space mission on a budget. Every choice has a cost.</p>
+    </div>
+    <button id="helpBtn" class="ghost">How to play</button>
+  </header>
+
+  <!-- TEAM BAR: only shows in team mode. Click a player to hand them the controls. -->
+  <nav id="teamBar" class="teamBar" hidden></nav>
+
+  <!-- THE BIG SCENE: Earth, the destination planet, and the rocket -->
+  <section class="scene">
+    <div class="globe jupiter" id="jupiter" hidden></div>
+    <div class="globe" id="destGlobe"></div>
+    <div class="globe earth"></div>
+    <span class="planetLabel" id="planetLabel"></span>
+    <span class="rocket" id="rocketIcon">🚀</span>
+    <p class="forecast" id="forecast"></p>
+  </section>
+
+  <!-- THE BAY: every part you pick appears here -->
+  <section class="bay">
+    <h2>Your spacecraft</h2>
+    <div class="bayItems" id="bayItems"></div>
+  </section>
+
+  <main>
+    <!-- LEFT SIDE: choices. data-owner = which team role is allowed to use it -->
+    <section class="panel">
+      <div data-owner="director">
+        <h2>Where are we going?</h2>
+        <select id="destination"></select>
+        <p class="hint" id="destInfo"></p>
+
+        <h2>Pick a rocket</h2>
+        <select id="rocket"></select>
+        <p class="hint" id="rocketInfo"></p>
+      </div>
+
+      <div data-owner="engineer">
+        <h2>Power system</h2>
+        <select id="power"></select>
+        <p class="hint" id="powerInfo"></p>
+
+        <h2>Antenna</h2>
+        <select id="antenna"></select>
+        <p class="hint" id="antennaInfo"></p>
+      </div>
+
+      <div data-owner="science">
+        <h2>Science instruments</h2>
+        <div id="instrumentList"></div>
+      </div>
+    </section>
+
+    <!-- RIGHT SIDE: dashboard, launch button, commander -->
+    <section class="panel">
+      <h2>Mission dashboard</h2>
+
+      <div class="meter">
+        <div class="meter-top"><span>Budget</span><span id="budgetText"></span></div>
+        <div class="bar"><div class="fill" id="budgetFill"></div></div>
+      </div>
+      <div class="meter">
+        <div class="meter-top"><span>Weight (rocket lift limit)</span><span id="massText"></span></div>
+        <div class="bar"><div class="fill" id="massFill"></div></div>
+      </div>
+      <div class="meter">
+        <div class="meter-top"><span>Power (needed / available)</span><span id="powerText"></span></div>
+        <div class="bar"><div class="fill" id="powerFill"></div></div>
+      </div>
+      <div class="meter">
+        <div class="meter-top"><span>Data (made / can send)</span><span id="dataText"></span></div>
+        <div class="bar"><div class="fill" id="dataFill"></div></div>
+      </div>
+
+      <button id="launchBtn" class="big">Launch mission</button>
+      <button id="resetBtn" class="big secondary" hidden>Design again</button>
+
+      <div class="commander">
+        <span class="avatar">👩‍🚀</span>
+        <p id="commanderSays"></p>
+      </div>
+
+      <div id="result" class="result" hidden></div>
+    </section>
+  </main>
+
+  <footer>
+    A simplified learning model based on the four mission segments in NASA's mission design overview: launch, space, ground and user. The numbers are invented.
+  </footer>
+
+  <!-- THE WELCOME POP-UP: 4 slides that explain everything for beginners -->
+  <dialog id="intro">
+    <section class="slide">
+      <h2>Welcome, mission engineer</h2>
+      <p>Your job: design a space mission, spend a limited budget, and make sure it survives the trip. You do not need to know any space science. The game teaches you as you play.</p>
+      <p>Pick a place to explore, build a spacecraft, press launch, and find out if it works. If it fails, the game tells you exactly why.</p>
+    </section>
+
+    <section class="slide" hidden>
+      <h2>How a real mission is built</h2>
+      <ul>
+        <li><b>Launch:</b> a rocket carries your spacecraft off Earth.</li>
+        <li><b>Space:</b> the spacecraft has instruments (the science tools) and a power system.</li>
+        <li><b>Ground:</b> an antenna sends your results home to Earth.</li>
+        <li><b>Users:</b> scientists use the data. That is your score.</li>
+      </ul>
+    </section>
+
+    <section class="slide" hidden>
+      <h2>Four words to know</h2>
+      <ul>
+        <li><b>Payload capacity:</b> how much weight a rocket can lift. Heavier spacecraft need bigger, costlier rockets.</li>
+        <li><b>Power:</b> electricity for your instruments. Solar panels make less far from the Sun.</li>
+        <li><b>Data rate:</b> how much information the antenna can send home, like internet speed. Far away means slower.</li>
+        <li><b>Safety margin:</b> spare power or budget left over, in case something goes wrong.</li>
+      </ul>
+    </section>
+
+    <section class="slide" hidden>
+      <h2>How do you want to play?</h2>
+      <fieldset>
+        <legend>Players (one computer, pass it around)</legend>
+        <label><input type="radio" name="players" value="1" checked> Solo</label>
+        <label><input type="radio" name="players" value="2"> 2 players</label>
+        <label><input type="radio" name="players" value="3"> 3 players</label>
+        <label><input type="radio" name="players" value="4"> 4 players</label>
+      </fieldset>
+      <p class="hint">In a team, each player controls one part of the mission. You must talk to each other to fix problems.</p>
+      <fieldset>
+        <legend>Difficulty</legend>
+        <label><input type="radio" name="level" value="easy"> Easy: big budget, no surprises</label>
+        <label><input type="radio" name="level" value="normal" checked> Normal: sometimes space weather</label>
+        <label><input type="radio" name="level" value="hard"> Hard: small budget, often space weather</label>
+      </fieldset>
+    </section>
+
+    <div class="dlgNav">
+      <button id="backBtn" class="ghost">Back</button>
+      <button id="nextBtn">Next</button>
+    </div>
+  </dialog>
+
+  <script src="game.js"></script>
+</body>
+</html>
